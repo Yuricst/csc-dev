@@ -37,60 +37,8 @@ def planet_int2str(planet_idx):
     return name
 
 
-# def run_optim_depart(seq_key, algo, t0range=None, pop_size=10, n_t0=100, vinf_launch_max=4.5):
-#     """Construct pygmo departure transfer problem with MGA1DSM model
 
-#     Args:
-#         seq_key (list): list of body names, e.g. `["saturn", "saturn", "earth"]`
-#         algo (pg.algorithm): pygmo algorithm object
-#         t0range (list): earliest and latest launch-epoch window, in str, e.g. '2036-01-01 00:00:00.000'
-#         pop_size (int): population size for problem
-#         n_t0 (int): number of windows of launch-epoch
-
-#     Returns:
-#         (tuple): list of decision vectors, list of problems
-#     """
-#     # get solar system
-#     ssdict = pxp.solar_system_spice()
-
-#     tof = [
-#         [0.2/pk.DAY2YEAR, 6/pk.DAY2YEAR] for el in range(len(seq_key)-1)
-#     ]
-
-#     pop_list = []
-#     prob_list = []
-
-#     if t0range is None:
-#         t0_earliest = pk.epoch_from_string('2036-01-01 00:00:00.000').mjd2000
-#         t0_latest   = pk.epoch_from_string('2044-01-01 00:00:00.000').mjd2000
-#     else:
-#         t0_earliest = pk.epoch_from_string(t0range[0]).mjd2000
-#         t0_latest   = pk.epoch_from_string(t0range[1]).mjd2000
-#     t0_range = np.linspace(t0_earliest, t0_latest, n_t0)
-#     dt0 = 1.1*(t0_range[1] - t0_range[0])  # have some overlap
-
-#     for i_window in tqdm(range(n_t0), desc="scanning launch window"):
-#         t0_iter = [
-#             t0_range[i_window],
-#             t0_range[i_window]+dt0
-#         ]
-
-
-#         # run problem
-#         seq = [ssdict[el] for el in seq_key]
-#         prob_iter = pxp.get_depart_problem(seq, t0_iter, tof, vinf_launch_max)
-#         pop = pg.population(prob=prob_iter, size=pop_size)
-#         pop = algo.evolve(pop)
-
-#         # store
-#         pop_list.append(pop)
-#         prob_list.append(prob_iter)
-
-#     return pop_list, prob_list
-
-
-
-def run_optim_return(seq_key, algo, t0range=None, pop_size=10, n_t0=100):
+def run_optim_return_mo(seq_key, algo, t0range=None, pop_size=10, n_t0=100):
     """Construct pygmo return transfer problem with MGA1DSM model
 
     Args:
@@ -107,20 +55,15 @@ def run_optim_return(seq_key, algo, t0range=None, pop_size=10, n_t0=100):
     ssdict = pxp.solar_system_spice()
 
     tof = [
-        [5/pk.DAY2YEAR, 10/pk.DAY2YEAR] for el in range(len(seq_key)-1)
+        [0.2/pk.DAY2YEAR, 6/pk.DAY2YEAR] for el in range(len(seq_key)-1)
     ]
-    # tof = [
-    #     [3/pk.DAY2YEAR, 7/pk.DAY2YEAR],
-    #     [50.0, 2/pk.DAY2YEAR],
-    # ]
-
 
     pop_list = []
     prob_list = []
 
     if t0range is None:
         t0_earliest = pk.epoch_from_string('2044-01-01 00:00:00.000').mjd2000
-        t0_latest   = pk.epoch_from_string('2048-01-01 00:00:00.000').mjd2000
+        t0_latest   = pk.epoch_from_string('2054-01-01 00:00:00.000').mjd2000
     else:
         t0_earliest = pk.epoch_from_string(t0range[0]).mjd2000
         t0_latest   = pk.epoch_from_string(t0range[1]).mjd2000
@@ -135,7 +78,7 @@ def run_optim_return(seq_key, algo, t0range=None, pop_size=10, n_t0=100):
 
         # run problem
         seq = [ssdict[el] for el in seq_key]
-        prob_iter = pxp.get_return_problem(seq, t0_iter, tof)
+        prob_iter = pxp.get_return_problem(seq, t0_iter, tof, mo=True)
         pop = pg.population(prob=prob_iter, size=pop_size)
         pop = algo.evolve(pop)
 
@@ -149,8 +92,8 @@ def run_optim_return(seq_key, algo, t0range=None, pop_size=10, n_t0=100):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Run interplanetary transfer")
-    parser.add_argument('-s', '--sequence', help='sequence of flyby: ')
-    parser.add_argument('-d', '--data', help='store data to file: ')
+    parser.add_argument('-s', '--sequence', help='sequence of flyby ')
+    parser.add_argument('-d', '--data', help='store data to file ')
     parser.add_argument('-a', '--algorithm', help='choice of algorithm ')
     args = parser.parse_args()
     if args.sequence:
@@ -172,18 +115,15 @@ if __name__=="__main__":
     if args.algorithm:
         choice_algo = args.algorithm
     else:
-        choice_algo = "de"
+        choice_algo = "maco"
     algo = pxp.algo_factory(choice=choice_algo)
     print(f"Using algorithm: {choice_algo}")
-    pop_size = 20
+    pop_size = 70
     t0range = [
         '2044-01-01 00:00:00.000',
         '2046-01-01 00:00:00.000'
     ]
-    n_t0 = 400
-    pop_list, prob_list = run_optim_return(
-        seq_key, algo, t0range=t0range, pop_size=pop_size, n_t0=n_t0
-    )
+    pop_list, prob_list = run_optim_return_mo(seq_key, algo, t0range=t0range, pop_size=pop_size)
 
     # get combined list of xs and fs
     for idx,pop_iter in enumerate(pop_list):
@@ -213,10 +153,10 @@ if __name__=="__main__":
     #plt.savefig("../notebooks/plots/seq_"+seq_name+".png")
 
     # get number of files
-    filenames = os.listdir("../notebooks/optim_res_return")
+    filenames = os.listdir("../notebooks/optim_res_return_mo")
     n_data_already = 0
     for filename in filenames:
-        if "seq_" + seq_name + "_" in filename:
+        if seq_name in filename:
             n_data_already += 1
     # save result array
     if args.data:
@@ -225,7 +165,7 @@ if __name__=="__main__":
         choose_save = input("save (y/n)? [y]: ")
 
     if choose_save != "n":
-        saved_file = "../notebooks/optim_res_return/seq_"+seq_name+"_"+str(n_data_already+1)
+        saved_file = "../notebooks/optim_res_return_mo/seq_"+seq_name+str(n_data_already+1)
         np.save(saved_file, x_combined)
         print(f"Saved data at {saved_file}")
     # plot result for fun

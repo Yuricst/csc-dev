@@ -16,4 +16,7 @@ except:
 
 
 from ._planets import *
+from ._pygmo_helper import *
 from ._problems import *
+from ._plot_helper import *
+from ._spice_integrator import *
