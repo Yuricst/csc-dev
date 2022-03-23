@@ -68,7 +68,6 @@ def run_optim_depart(seq_key, algo, t0range=None, pop_size=10, n_t0=100, vinf_la
             t0_range[i_window]+dt0
         ]
 
-
         # run problem
         seq = [ssdict[el] for el in seq_key]
         prob_iter = pxp.get_depart_problem(seq, t0_iter, tof, vinf_launch_max)
@@ -94,7 +93,7 @@ if __name__=="__main__":
             planet_int2str(int(args.sequence[el])) for el in range(len(args.sequence))
         ]
     else:
-        seq_key = ["earth", "venus", "earth", "saturn"]
+        seq_key = ["earth", "jupiter", "saturn"]
 
     # get sequence name string
     seq_name = ""
@@ -110,12 +109,13 @@ if __name__=="__main__":
     else:
         choice_algo = "de"
     algo = pxp.algo_factory(choice=choice_algo)
-    print(f"Using algorithm: {choice_algo}")
     pop_size = 60
+    print(f"Using algorithm: {choice_algo}, pop_size: {pop_size}")
     t0range = [
-        '2030-01-01 00:00:00.000',
-        '2038-01-01 00:00:00.000'
+        '2032-01-01 00:00:00.000',
+        '2035-01-01 00:00:00.000'
     ]
+    print(f"Using window {t0range[0][0:10]} ~ {t0range[1][0:10]}")
     c3_max = 83
     pop_list, prob_list = run_optim_depart(
         seq_key, algo, t0range=t0range, pop_size=pop_size,

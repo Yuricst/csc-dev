@@ -80,7 +80,10 @@ def porkchop_process(
         pop_f, 
         n_leg, 
         direction, 
-        entry_altitude=200.0
+        entry_altitude=200.0,
+        cutoff_t0_min=-np.inf,
+        cutoff_t0_max=np.inf,
+        max_dsm_total=np.inf,
     ):
     # extract from decision vector
     data = {
@@ -114,72 +117,75 @@ def porkchop_process(
 
 
     for idx, x in tqdm(enumerate(pop_x), total=len(pop_x)):
-        data["x"].append(x)
-        data["t0"].append(x[0])
-        data["t0_matplotlib"].append(
-            np.datetime64(
-                datetime.datetime.strptime(
-                    pk.epoch(x[0]).__str__()[0:11], 
-                    '%Y-%b-%d'
-                ).strftime('%Y-%m-%d')
-            )
-        )
+        if (cutoff_t0_min < x[0] < cutoff_t0_max):
 
-        # get tof
-        tof_total = x[5]
-        for i_leg in range(n_leg-1):
-            tof_total += x[5+4*(i_leg+1)]
-        data["tof_total"].append(tof_total)
+            # get tof
+            tof_total = x[5]
+            for i_leg in range(n_leg-1):
+                tof_total += x[5+4*(i_leg+1)]
 
-        # arrival epoch
-        data["tf_matplotlib"].append(
-            np.datetime64(
-                datetime.datetime.strptime(
-                    pk.epoch(x[0]+tof_total).__str__()[0:11], 
-                    '%Y-%b-%d'
-                ).strftime('%Y-%m-%d')
-            )
-        )
+            if direction=="depart":
+                dvs1, _, _, _, _ = prob_no_vinf_dep._compute_dvs(x)
+                dsm_total = sum(dvs1)
+                dvs2, _, _, _, _ = prob_with_vinf_dep._compute_dvs(x)
+                dv_total = sum(dvs2)
 
-        # objective
-        data["f"].append(pop_f[idx])
+                # launch delta-V
+                launch_deltaV = dv_total - dsm_total
 
-        if direction=="depart":
-            dvs1, _, _, _, _ = prob_no_vinf_dep._compute_dvs(x)
-            dsm_total = sum(dvs1)
-            dvs2, _, _, _, _ = prob_with_vinf_dep._compute_dvs(x)
-            dv_total = sum(dvs2)
+            elif direction == "return":
+                dvs1, _, _, _, _ = prob_no_vinf_arr._compute_dvs(x)
+                dsm_total = sum(dvs1)
+                dvs2, _, _, _, _ = prob_with_vinf_arr._compute_dvs(x)
+                dv_total = sum(dvs2)
 
-            # launch delta-V
-            launch_deltaV = dv_total - dsm_total
+                # arrival delta-V
+                arrival_deltaV = dv_total - dsm_total
 
-        elif direction == "return":
-            dvs1, _, _, _, _ = prob_no_vinf_arr._compute_dvs(x)
-            dsm_total = sum(dvs1)
-            dvs2, _, _, _, _ = prob_with_vinf_arr._compute_dvs(x)
-            dv_total = sum(dvs2)
+            else:
+                raise NotImplementedError("direction should be depart or return!")
+            
+            if dsm_total < max_dsm_total:
+                # arrival delta-V
+                arrival_deltaV = dv_total - dsm_total
+                
+                # store
+                data["x"].append(x)
+                data["t0"].append(x[0])
+                data["t0_matplotlib"].append(
+                    np.datetime64(
+                        datetime.datetime.strptime(
+                            pk.epoch(x[0]).__str__()[0:11], 
+                            '%Y-%b-%d'
+                        ).strftime('%Y-%m-%d')
+                    )
+                )
+                data["tof_total"].append(tof_total)
 
-            # arrival delta-V
-            arrival_deltaV = dv_total - dsm_total
+                # arrival epoch
+                data["tf_matplotlib"].append(
+                    np.datetime64(
+                        datetime.datetime.strptime(
+                            pk.epoch(x[0]+tof_total).__str__()[0:11], 
+                            '%Y-%b-%d'
+                        ).strftime('%Y-%m-%d')
+                    )
+                )
 
-        else:
-            raise NotImplementedError("direction should be depart or return!")
-        
-        # arrival delta-V
-        arrival_deltaV = dv_total - dsm_total
-        
-        # store
-        data["dsm_total"].append(dsm_total)
-        data["dv_total"].append(dv_total)
-        data["idx"].append(idx)
+                # objective
+                data["f"].append(pop_f[idx])
 
-        if direction == "depart":
-            data["launch_deltaV"].append(launch_deltaV)
-        else:
-            data["arrival_deltaV"].append(arrival_deltaV)
-            entry_v = np.sqrt(arrival_deltaV**2 + 2*pk.MU_EARTH / (1e3*(6378.0 + entry_altitude)))
-            data["entry_v"].append(entry_v)
-        
+                data["dsm_total"].append(dsm_total)
+                data["dv_total"].append(dv_total)
+                data["idx"].append(idx)
+
+                if direction == "depart":
+                    data["launch_deltaV"].append(launch_deltaV)
+                else:
+                    data["arrival_deltaV"].append(arrival_deltaV)
+                    entry_v = np.sqrt(arrival_deltaV**2 + 2*pk.MU_EARTH / (1e3*(6378.0 + entry_altitude)))
+                    data["entry_v"].append(entry_v)
+            
     # convert to numpy array
     data["t0"] = np.array(data["t0"])
     data["tof_total"] = np.array(data["tof_total"])
