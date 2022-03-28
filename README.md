@@ -2,6 +2,8 @@
 
 ### `pyexplorer` module dependencies
 
+Python 3.8.12
+
 Dependencies: `pykep`, `pygmo`, `numba`, `numpy`, `scipy`, `tqdm`, `spiceypy`, [`polaris`](https://github.com/Yuricst/polaris)
 
 ```python
