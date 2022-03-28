@@ -12,6 +12,8 @@ MU_JUPITER = 1.2671276480000021E+08 * 1e9  # in SI
 MU_SATURN = 3.7940585200000003E+07*1e9  # in SI
 MU_TITAN = 8.978138845307376E+03 * 1e9   # SI
 
+SMA_TITAN = 1221914042.5450587  # in SI
+
 R_VENUS   = 12104/2 * 1e3
 R_EARTH   = 6378 *1e3
 R_MARS    = 6792/2 *1e3
@@ -46,10 +48,10 @@ def saturn_system(titan_safety_altitude=1000000):
 	"""
 	# elements of titan
 	elements_titan = [
-		1221914042.5450587,
-		 0.028659655999962765,
-		 0.48280065937311095,
-		 2.949265038410724,
+		1221914042.5450587,     # a
+		 0.028659655999962765,  # e
+	 	 0.34854*np.pi/180,     # inclination w.r.t. Saturn equator
+		 2.949265038410724, 
 		 3.2731913085559383,
 		 1.491791176502704
 	]
@@ -69,3 +71,75 @@ def saturn_system(titan_safety_altitude=1000000):
 	return saturn_system_list
 
 
+
+def coord_planet(planet, t0, t_step):
+    period = planet.compute_period(pk.epoch(t0, 'mjd2000'))
+    n = int(round(period/t_step))
+    ts_lambert = np.linspace(0, period, n)
+    r0, v0 = planet.eph(pk.epoch(t0, 'mjd2000'))
+    coord = np.zeros((6,n))
+    for idx,t in enumerate(ts_lambert):
+        rf,vf = pk.propagate_lagrangian(r0, v0, tof = t, mu = pk.MU_SUN)
+        coord[0:3,idx] = rf
+        coord[3:6,idx] = vf
+    return coord
+
+
+def coord_mga_1dsm(prob, x, t_step):
+    # get solution stuff
+    traj_comp, dsm_info = prob.get_trajectory_components(x)
+    t0 = x[0]  # this is in MJD
+    
+    # trajectory storage
+    rs_list, vs_list, ts_list = [], [], []
+    t_running = 0
+    
+    # propagate each leg
+    for idx, leg in enumerate(traj_comp):
+        n = int(round(leg[2]/t_step))
+        ts_lambert = np.linspace(0, leg[2], n)
+    
+        for t in ts_lambert:
+            rf,vf = pk.propagate_lagrangian(r0 = leg[0], v0 = leg[1], tof = t, mu = leg[3])
+            rs_list.append(rf)
+            vs_list.append(vf)
+            ts_list.append(t0 + t_running/pk.DAY2SEC + t/pk.DAY2SEC)
+        t_running += leg[2]
+            
+    # convert to array
+    n_elements = len(rs_list)
+    coord = np.zeros((7,n_elements))
+    for idx in range(n_elements):
+        coord[0, idx]  = ts_list[idx]
+        coord[1:4,idx] = rs_list[idx]
+        coord[4:7,idx] = vs_list[idx]
+    return coord, dsm_info, traj_comp
+
+
+
+def coord_mga_1dsm_v2(traj_comp, t0, t_step):
+    """Get coordinates from MGA1DSM problem"""
+    # trajectory storage
+    rs_list, vs_list, ts_list = [], [], []
+    t_running = 0
+    
+    # propagate each leg
+    for idx, leg in enumerate(traj_comp):
+        n = int(round(leg[2]/t_step))
+        ts_lambert = np.linspace(0, leg[2], n)
+    
+        for t in ts_lambert:
+            rf,vf = pk.propagate_lagrangian(r0 = leg[0], v0 = leg[1], tof = t, mu = leg[3])
+            rs_list.append(rf)
+            vs_list.append(vf)
+            ts_list.append(t0 + t_running/pk.DAY2SEC + t/pk.DAY2SEC)
+        t_running += leg[2]
+            
+    # convert to array
+    n_elements = len(rs_list)
+    coord = np.zeros((7,n_elements))
+    for idx in range(n_elements):
+        coord[0, idx]  = ts_list[idx]
+        coord[1:4,idx] = rs_list[idx]
+        coord[4:7,idx] = vs_list[idx]
+    return coord

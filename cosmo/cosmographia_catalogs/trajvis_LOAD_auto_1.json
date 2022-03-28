@@ -1,0 +1,8 @@
+{
+       "version": "1.0",
+       "name": "traj_autogen_1",
+       "require": [
+               "trajvis_spice_auto_1.json",
+               "trajvis_spacecraft_auto_1.json"
+       ]
+}

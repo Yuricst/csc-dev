@@ -1,0 +1,17 @@
+\begindata
+   INPUT_DATA_TYPE   = 'STATES'
+   OUTPUT_SPK_TYPE   = 9
+   OBJECT_ID         = -10005
+   CENTER_ID         = 10
+   REF_FRAME_NAME    = 'ECLIPJ2000'
+   PRODUCER_ID       = 'Yuri'
+   DATA_ORDER        = 'EPOCH X Y Z VX VY VZ'
+   INPUT_DATA_UNITS  = ('ANGLES=DEGREES' 'DISTANCES=km')
+   DATA_DELIMITER    = ','
+   LINES_PER_RECORD  = 1
+   TIME_WRAPPER      = '# ETSECONDS'
+   IGNORE_FIRST_LINE = 1
+   LEAPSECONDS_FILE  = '/home/yuri/Documents/spice/lsk/naif0012.tls'
+   POLYNOM_DEGREE    = 9
+   SEGMENT_ID        = 'SPK_STATES_09'
+\begintext

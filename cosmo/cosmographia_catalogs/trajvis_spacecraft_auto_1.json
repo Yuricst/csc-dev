@@ -1,0 +1,57 @@
+{
+       "version": "1.0",
+       "name": "traj_autogen_1",
+       "items": [
+               {
+                       "class": "spacecraft",
+                       "name": "TheORACLE",
+                       "startTime": "2046-07-18 10:12:15.825 TDB",
+                       "arcs": [
+                               {
+                                       "endTime": "2053-12-24 17:59:41.364 TDB",
+                                       "center": "Sun",
+                                       "trajectory": {
+                                               "type": "Spice",
+                                               "target": "-10005",
+                                               "center": "SUN"
+                                       }
+                               }
+                       ],
+
+                       "geometry": {
+                               "type": "Mesh",
+                               "meshRotation": [
+                                       0,
+                                       1,
+                                       0,
+                                       0
+                               ],
+                               "size": 10,
+                               "source": "/home/yuri/apps/cosmographia-4.1/data/models/cassini/Cassini_no_Huygens_03.3ds"
+                       },
+
+                       "label": {
+                               "color": [
+                                       0.6,
+                                       1,
+                                       1
+                               ],
+                               "fadeSize": 10000000,
+                               "showText": true
+                       },
+
+                       "trajectoryPlot": {
+                               "color": [
+                                       0,
+                                       0.9551,
+                                       0.651
+                               ],
+                               "lineWidth": 4.0,
+                               "duration": "5434 d",
+                               "lead": "2717 d",
+                               "fade": 0,
+                               "samplecount": 10000
+                       }
+               }
+       ]
+}

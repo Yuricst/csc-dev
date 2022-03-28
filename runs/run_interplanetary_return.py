@@ -90,7 +90,7 @@ def planet_int2str(planet_idx):
 
 
 
-def run_optim_return(seq_key, algo, t0range=None, pop_size=10, n_t0=100):
+def run_optim_return(seq_key, algo, t0range=None, pop_size=10, n_t0=100, vinf_first=4.0):
     """Construct pygmo return transfer problem with MGA1DSM model
 
     Args:
@@ -107,13 +107,12 @@ def run_optim_return(seq_key, algo, t0range=None, pop_size=10, n_t0=100):
     ssdict = pxp.solar_system_spice()
 
     tof = [
-        [5/pk.DAY2YEAR, 10/pk.DAY2YEAR] for el in range(len(seq_key)-1)
+        [6/pk.DAY2YEAR, 10/pk.DAY2YEAR] for el in range(len(seq_key)-1)
     ]
     # tof = [
     #     [3/pk.DAY2YEAR, 7/pk.DAY2YEAR],
     #     [50.0, 2/pk.DAY2YEAR],
     # ]
-
 
     pop_list = []
     prob_list = []
@@ -135,7 +134,7 @@ def run_optim_return(seq_key, algo, t0range=None, pop_size=10, n_t0=100):
 
         # run problem
         seq = [ssdict[el] for el in seq_key]
-        prob_iter = pxp.get_return_problem(seq, t0_iter, tof)
+        prob_iter = pxp.get_return_problem(seq, t0_iter, tof, vinf_first=vinf_first)
         pop = pg.population(prob=prob_iter, size=pop_size)
         pop = algo.evolve(pop)
 
@@ -174,18 +173,19 @@ if __name__=="__main__":
     else:
         choice_algo = "de"
     algo = pxp.algo_factory(choice=choice_algo)
-    pop_size = 60
+    pop_size = 40
     print(f"Using algorithm: {choice_algo}, pop_size: {pop_size}")
-    
+
+    vinf_first = 4.0   # max v-infinity at launch
     t0range = [
-        '2044-01-01 00:00:00.000',
-        '2046-01-01 00:00:00.000'
+        '2044-01-01 00:00:00.000',#'2044-01-01 00:00:00.000',
+        '2048-01-01 00:00:00.000'
     ]
     print(f"Using window {t0range[0][0:10]} ~ {t0range[1][0:10]}")
 
-    n_t0 = 400
+    n_t0 = 500
     pop_list, prob_list = run_optim_return(
-        seq_key, algo, t0range=t0range, pop_size=pop_size, n_t0=n_t0
+        seq_key, algo, t0range=t0range, pop_size=pop_size, n_t0=n_t0, vinf_first=vinf_first,
     )
 
     # get combined list of xs and fs
@@ -200,8 +200,9 @@ if __name__=="__main__":
     # process porkchop
     n_leg = len(seq_key)-1
     porkchop_return = pxp.porkchop_process(
-        prob_list[0], x_combined, f_combined, n_leg, direction="return",
+        prob_list[0], x_combined, f_combined, n_leg, direction="return", 
     )
+    print(f"Min objective found: {f_combined}")
 
     # create and save plot
     plt.rcParams["font.size"] = 12
@@ -216,7 +217,7 @@ if __name__=="__main__":
     #plt.savefig("../notebooks/plots/seq_"+seq_name+".png")
 
     # get number of files
-    filenames = os.listdir("../notebooks/optim_res_return")
+    filenames = os.listdir("../notebooks/optim_res_return_vinf6")
     n_data_already = 0
     for filename in filenames:
         if "seq_" + seq_name + "_" in filename:
@@ -228,7 +229,7 @@ if __name__=="__main__":
         choose_save = input("save (y/n)? [y]: ")
 
     if choose_save != "n":
-        saved_file = "../notebooks/optim_res_return/seq_"+seq_name+"_"+str(n_data_already+1)
+        saved_file = "../notebooks/optim_res_return_vinf6/seq_"+seq_name+"_"+str(n_data_already+1)
         np.save(saved_file, x_combined)
         print(f"Saved data at {saved_file}")
     # plot result for fun

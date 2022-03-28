@@ -1,0 +1,7 @@
+{
+       "version": "1.0",
+       "name": "traj_autogen_1",
+       "spiceKernels": [
+               "/home/yuri/Documents/dev-python/csc-dev/notebooks/spice/baseline_outbound_SE.bsp"
+       ]
+}

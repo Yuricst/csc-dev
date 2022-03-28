@@ -12,7 +12,7 @@ import copy
 from ._pygmo_helper import mga_1dsm, mga_1dsm_vinf_arr
 
 
-def get_depart_problem(seq, t0, tof, vinf_launch_max=4.5):
+def get_depart_problem(seq, t0, tof, vinf_launch_max=4.5, multi_objective = False):
     """Get return problem
 
     Key settings:
@@ -24,8 +24,8 @@ def get_depart_problem(seq, t0, tof, vinf_launch_max=4.5):
         seq = seq,
         t0 = t0,
         tof=tof,
-        vinf = [0.0, vinf_launch_max], 
-        multi_objective = False, 
+        vinf = [0.95*vinf_launch_max, vinf_launch_max], 
+        multi_objective = multi_objective, 
         add_vinf_dep = False, 
         add_vinf_arr = True,
         tof_encoding = 'direct'
@@ -47,7 +47,7 @@ def get_return_problem(seq, t0, tof, vinf_first=2.0, mo=False):
             seq = seq,
             t0 = t0, 
             tof = tof,
-            vinf = [0.0, vinf_first],  # no launch v-infinity
+            vinf = [vinf_first*0.7, vinf_first],  # no launch v-infinity
             multi_objective = False, 
             add_vinf_dep = True, 
             add_vinf_arr = True,
@@ -103,10 +103,10 @@ def porkchop_process(
     # create two problems
     if direction=="depart":
         prob_no_vinf_dep = copy.deepcopy(prob_iter)
-        prob_no_vinf_dep._add_vinf_arr = False
+        prob_no_vinf_dep._add_vinf_dep = False
 
         prob_with_vinf_dep = copy.deepcopy(prob_iter)
-        prob_with_vinf_dep._add_vinf_arr = True
+        prob_with_vinf_dep._add_vinf_dep = True
 
     elif direction == "return":
         prob_no_vinf_arr = copy.deepcopy(prob_iter)

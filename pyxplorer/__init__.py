@@ -20,3 +20,5 @@ from ._pygmo_helper import *
 from ._problems import *
 from ._plot_helper import *
 from ._spice_integrator import *
+from ._mission import *
+from ._custom_problem import *

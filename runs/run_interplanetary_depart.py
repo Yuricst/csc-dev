@@ -46,8 +46,8 @@ def run_optim_depart(seq_key, algo, t0range=None, pop_size=10, n_t0=100, vinf_la
     #     [0.2/pk.DAY2YEAR, 6/pk.DAY2YEAR] for el in range(len(seq_key)-1)
     # ]
     tof = [
-        [1/pk.DAY2YEAR, 5/pk.DAY2YEAR],
-        [1/pk.DAY2YEAR, 7/pk.DAY2YEAR],
+        [2/pk.DAY2YEAR, 5/pk.DAY2YEAR],
+        [3/pk.DAY2YEAR, 6/pk.DAY2YEAR],
     ]
 
     pop_list = []
@@ -109,14 +109,14 @@ if __name__=="__main__":
     else:
         choice_algo = "de"
     algo = pxp.algo_factory(choice=choice_algo)
-    pop_size = 60
+    pop_size = 30
     print(f"Using algorithm: {choice_algo}, pop_size: {pop_size}")
     t0range = [
-        '2032-01-01 00:00:00.000',
+        '2033-01-01 00:00:00.000',
         '2035-01-01 00:00:00.000'
     ]
     print(f"Using window {t0range[0][0:10]} ~ {t0range[1][0:10]}")
-    c3_max = 83
+    c3_max = 85
     pop_list, prob_list = run_optim_depart(
         seq_key, algo, t0range=t0range, pop_size=pop_size,
         vinf_launch_max=np.sqrt(c3_max)
