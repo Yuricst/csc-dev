@@ -21,5 +21,15 @@ import pyxplorer as pxp
 ### Gallery
 
 <p align="center">
+  <img src="./notebooks/plots/seq_earth-jupiter-saturn_dsm_dv.png" width="550" title="Earth-Jupiter-Saturn window">
+</p>
+
+
+<p align="center">
+  <img src="./notebooks/plots/titan_vilt.png" width="550" title="Titan VILT">
+</p>
+
+
+<p align="center">
   <img src="./notebooks/plots/groundtrack_raw_3days.png" width="550" title="Ground track">
 </p>
