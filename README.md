@@ -16,3 +16,10 @@ import pyxplorer as pxp
 - `./notebooks` contains Jupyter notebooks used to develop/run codes for analysis, plotting, etc.
 - `./runs` contains scripts used to generate optimization data (i.e. local optimal solutions, since trajectory problem was sought via global optimization over launch windows spanning years)
 - `./cosmo` contains catalog files for visualizing the trajectory (interplanetary part) using [NAIF's Cosmographia](https://naif.jpl.nasa.gov/naif/cosmographia.html)
+
+
+### Gallery
+
+<p align="center">
+  <img src="./notebooks/plots/groundtrack_raw_3days.png" width="550" title="Ground track">
+</p>
